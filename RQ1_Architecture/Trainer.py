@@ -41,7 +41,7 @@ def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=
     epsilon_end = 0.01
     epsilon_decay = 0.995
     epsilon = epsilon_start
-    scores = deque(maxlen=100)
+    all_scores = []
 
     start_time = time.time()
     for episode in range(1, episodes + 1):
@@ -57,20 +57,20 @@ def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=
             score += reward
             if done:
                 break
-        scores.append(score)
+        all_scores.append(score)
         epsilon = max(epsilon_end, epsilon_decay * epsilon)
 
         if episode % 100 == 0:
-            print(f"Episode {episode} | Average Score: {np.mean(scores):.2f} | Time Elapsed: {time.time() - start_time:.2f}s")
+            print(f"Episode {episode} | Time Elapsed: {time.time() - start_time:.2f}s | Score = {score}")
 
     end_time = time.time()
-    final_avg_score = np.mean(scores)
     elapsed_time = end_time - start_time
+    final_avg_score = np.mean(all_scores[899:1000]) if len(all_scores) >= 1000 else np.mean(all_scores[-100:])
 
-    # Save model
+    print(f"Final average score (episodes 900-1000): {final_avg_score:.2f}")
+
     torch.save(agent.local_qnetwork.state_dict(), f"checkpoint_{arch_name}.pth")
 
-    # Log to CSV
     with open("results.csv", mode="a", newline="") as file:
         writer = csv.writer(file)
         writer.writerow([arch_name, elapsed_time, final_avg_score])
@@ -78,21 +78,22 @@ def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=
 if __name__ == "__main__":
     architectures = {
         'Tiny': [32, 32],
-        'Base': [64, 64],
-        'Wide': [128, 128],
-        'Deep': [256, 128, 64],
+        #'Base': [64, 64],
+        #'Wide': [128, 128],
+        #'Deep': [256, 128, 64],
     }
 
     activations = {
         'Tiny': nn.ReLU,
-        'Base': nn.ReLU,
-        'Wide': nn.ReLU,
-        'Deep': nn.ReLU,
+        #'Base': nn.ReLU,
+        #'Wide': nn.ReLU,
+        #'Deep': nn.ReLU,
     }
 
-    # Create CSV with headers
     with open("results.csv", mode="w", newline="") as file:
         writer = csv.writer(file)
+        writer.writerow(["Architecture_Run", "Time_Taken_sec", "Final_Avg_Score_900_1000"])
+
     for arch in architectures:
         for run in range(5):
             print(f"\n=== Run {run+1}/5 for architecture: {arch} ===")
