@@ -2,27 +2,18 @@ import time
 import torch
 import torch.nn as nn
 import numpy as np
-import matplotlib.pyplot as plt
-from Lander_Env import Agent, env, state_size, number_actions  # Import agent and env setup
+import csv
+from collections import deque
+from Lander_Env import Agent, env, state_size, number_actions
 
-# === Architectures to Test ===
-architectures = {
-    'Tiny': [32, 32],
-    'Base': [64, 64],
-    'Wide': [128, 128],
-    'Deep': [256, 128, 64],
-    'Tanh': [64, 64],
-}
+learning_rate = 5e-4
 
-activations = {
-    'Tiny': nn.ReLU,
-    'Base': nn.ReLU,
-    'Wide': nn.ReLU,
-    'Deep': nn.ReLU,
-    'Tanh': nn.Tanh,
-}
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if device.type == "cuda":
+    print(f"GPU detected: {torch.cuda.get_device_name(0)}")
+else:
+    print("GPU not detected. Running on CPU.")
 
-# === Dynamic Network Injection ===
 class NeuNet(nn.Module):
     def __init__(self, input_size, output_size, hidden_sizes, activation):
         super(NeuNet, self).__init__()
@@ -38,81 +29,75 @@ class NeuNet(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-# === Train Runner ===
-def run_training(arch_name, layers, activation_fn, runs=5, episodes=1000):
-    all_rewards = []
-    all_times = []
-    success_eps = []
+def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=1000):
+    print(f"\nStarting training for architecture: {arch_name} on device: {device}")
+    agent = Agent(state_size, number_actions)
+    agent.device = device
+    agent.local_qnetwork = NeuNet(state_size, number_actions, layers, activation_fn).to(device)
+    agent.target_qnetwork = NeuNet(state_size, number_actions, layers, activation_fn).to(device)
+    agent.optimizer = torch.optim.Adam(agent.local_qnetwork.parameters(), lr=learning_rate)
 
-    for run in range(runs):
-        print(f"\n[Run {run + 1}/5] - {arch_name}")
-        agent = Agent(state_size, number_actions)
-        agent.local_qnetwork = NeuNet(state_size, number_actions, layers, activation_fn).to(agent.device)
-        agent.target_qnetwork = NeuNet(state_size, number_actions, layers, activation_fn).to(agent.device)
+    epsilon_start = 1.0
+    epsilon_end = 0.01
+    epsilon_decay = 0.995
+    epsilon = epsilon_start
+    scores = deque(maxlen=100)
 
-        episode_rewards = []
-        start_time = time.time()
-        for ep in range(episodes):
-            obs, _ = env.reset()
-            done = False
-            ep_reward = 0
-
-            while not done:
-                action = agent.act(obs)
-                next_obs, reward, done, _, _ = env.step(action)
-                agent.step(obs, action, reward, next_obs, done)
-                obs = next_obs
-                ep_reward += reward
-
-            episode_rewards.append(ep_reward)
-
-        end_time = time.time()
-        all_rewards.append(episode_rewards)
-        all_times.append(end_time - start_time)
-
-        # Success detection
-        success_ep = -1
-        for i in range(100, len(episode_rewards)):
-            if np.mean(episode_rewards[i-100:i]) > 200:
-                success_ep = i
+    start_time = time.time()
+    for episode in range(1, episodes + 1):
+        state, _ = env.reset()
+        state = torch.tensor(state, dtype=torch.float32).to(device)
+        score = 0
+        for t in range(max_timesteps):
+            action = agent.act(state.cpu().numpy(), epsilon)
+            next_state, reward, done, _, _ = env.step(action)
+            next_state_tensor = torch.tensor(next_state, dtype=torch.float32).to(device)
+            agent.step(state.cpu().numpy(), action, reward, next_state, done)
+            state = next_state_tensor
+            score += reward
+            if done:
                 break
-        success_eps.append(success_ep)
+        scores.append(score)
+        epsilon = max(epsilon_end, epsilon_decay * epsilon)
 
-    return all_rewards, all_times, success_eps
+        if episode % 100 == 0:
+            print(f"Episode {episode} | Average Score: {np.mean(scores):.2f} | Time Elapsed: {time.time() - start_time:.2f}s")
 
-# === Main Runner ===
+    end_time = time.time()
+    final_avg_score = np.mean(scores)
+    elapsed_time = end_time - start_time
+
+    # Save model
+    torch.save(agent.local_qnetwork.state_dict(), f"checkpoint_{arch_name}.pth")
+
+    # Log to CSV
+    with open("results.csv", mode="a", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([arch_name, elapsed_time, final_avg_score])
+
 if __name__ == "__main__":
-    results = {}
+    architectures = {
+        'Tiny': [32, 32],
+        'Base': [64, 64],
+        'Wide': [128, 128],
+        'Deep': [256, 128, 64],
+    }
 
+    activations = {
+        'Tiny': nn.ReLU,
+        'Base': nn.ReLU,
+        'Wide': nn.ReLU,
+        'Deep': nn.ReLU,
+    }
+
+    # Create CSV with headers
+    with open("results.csv", mode="w", newline="") as file:
+        writer = csv.writer(file)
     for arch in architectures:
-        rewards, times, success = run_training(
-            arch_name=arch,
-            layers=architectures[arch],
-            activation_fn=activations[arch]
-        )
-        results[arch] = {
-            'rewards': rewards,
-            'times': times,
-            'success_eps': success
-        }
-
-    print("\n===== SUMMARY =====")
-    for arch, data in results.items():
-        avg_time = np.mean(data['times'])
-        valid_successes = [s for s in data['success_eps'] if s != -1]
-        avg_success = np.mean(valid_successes) if valid_successes else "Never"
-        print(f"{arch}: Avg Time = {avg_time:.2f}s | Avg Success Ep = {avg_success}")
-
-    # Plot Reward Curves
-    plt.figure(figsize=(12, 6))
-    for arch in results:
-        mean_rewards = np.mean(np.array(results[arch]['rewards']), axis=0)
-        plt.plot(mean_rewards, label=arch)
-    plt.title("Average Reward per Episode (All Architectures)")
-    plt.xlabel("Episode")
-    plt.ylabel("Reward")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig("architecture_rewards_comparison.png")
-    plt.show()
+        for run in range(5):
+            print(f"\n=== Run {run+1}/5 for architecture: {arch} ===")
+            run_training(
+                arch_name=f"{arch}_run{run+1}",
+                layers=architectures[arch],
+                activation_fn=activations[arch]
+            )

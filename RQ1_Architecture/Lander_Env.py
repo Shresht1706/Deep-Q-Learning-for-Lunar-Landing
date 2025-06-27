@@ -14,9 +14,6 @@ env = gym.make("LunarLander-v3")
 state_shape = env.observation_space.shape #Vector
 state_size = env.observation_space.shape[0] #current state of env
 number_actions = env.action_space.n #Number of actions
-print('State shape: ', state_shape)
-print('State size: ', state_size)
-print('Number of actions: ', number_actions)
 
 learning_rate = 5e-4 #derived from experimentation
 minibatch_size = 100
@@ -48,14 +45,15 @@ class ReplayMemory(object):
 class Agent():
 
     def __init__(self, state_size, action_size):
-        self.device = torch.device("cuda:0" if cuda_bit==1 else "cpu") #if exterior device(gpu) is present. uses that hardware to process
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.state_size = state_size
         self.action_size = action_size
-        self.local_qnetwork = NeuNet(state_size, action_size).to(self.device)
-        self.target_qnetwork = NeuNet(state_size, action_size).to(self.device)
-        self.optimizer = optim.Adam(self.local_qnetwork.parameters(), lr = learning_rate)
+        self.local_qnetwork = None  # Will be assigned from Trainer
+        self.target_qnetwork = None
+        self.optimizer = None
         self.memory = ReplayMemory(replay_buffer_size)
         self.t_step = 0
+
 
     def step(self, state, action, reward, next_state, done):
         self.memory.push((state, action, reward, next_state, done))
