@@ -65,13 +65,13 @@ def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    final_avg_score = np.mean(all_scores[899:1000]) if len(all_scores) >= 1000 else np.mean(all_scores[-100:])
+    final_avg_score = np.mean(all_scores[949:1000]) if len(all_scores) >= 1000 else np.mean(all_scores[-50:])#last 50 scores to make it slightly more fair
 
     print(f"Final average score (episodes 900-1000): {final_avg_score:.2f}")
 
     torch.save(agent.local_qnetwork.state_dict(), f"checkpoint_{arch_name}.pth")
 
-    with open("results.csv", mode="a", newline="") as file:
+    with open("RQ1_results.csv", mode="a", newline="") as file:
         writer = csv.writer(file)
         writer.writerow([arch_name, elapsed_time, final_avg_score])
 
@@ -83,22 +83,11 @@ if __name__ == "__main__":
         #'Deep': [256, 128, 64],
     }
 
-    activations = {
-        'Tiny': nn.ReLU,
-        #'Base': nn.ReLU,
-        #'Wide': nn.ReLU,
-        #'Deep': nn.ReLU,
-    }
-
-    with open("results.csv", mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["Architecture_Run", "Time_Taken_sec", "Final_Avg_Score_900_1000"])
-
     for arch in architectures:
         for run in range(5):
-            print(f"\n=== Run {run+1}/5 for architecture: {arch} ===")
+            print(f"\n=== Run {run+3}/5 for architecture: {arch} ===")
             run_training(
                 arch_name=f"{arch}_run{run+1}",
                 layers=architectures[arch],
-                activation_fn=activations[arch]
+                activation_fn= nn.ReLU
             )
