@@ -1,0 +1,48 @@
+Testing: LR=0.0001, Gamma=0.95, Tau=0.001
+Episode 100 | Avg Last 100: -157.86 | Time Elapsed: 19.18s
+Episode 200 | Avg Last 100: -139.58 | Time Elapsed: 67.17s
+Episode 300 | Avg Last 100: -96.09 | Time Elapsed: 191.05s
+Episode 400 | Avg Last 100: -46.54 | Time Elapsed: 365.02s
+Episode 500 | Avg Last 100: -79.49 | Time Elapsed: 557.23s
+Testing: LR=0.0001, Gamma=0.95, Tau=0.01
+Episode 100 | Avg Last 100: -191.06 | Time Elapsed: 20.29s
+Episode 200 | Avg Last 100: -104.53 | Time Elapsed: 65.98s
+Episode 300 | Avg Last 100: 18.05 | Time Elapsed: 172.85s
+Episode 400 | Avg Last 100: 57.93 | Time Elapsed: 272.45s
+Episode 500 | Avg Last 100: -34.94 | Time Elapsed: 411.88s
+Testing: LR=0.0001, Gamma=0.95, Tau=0.1
+Episode 100 | Avg Last 100: -160.29 | Time Elapsed: 17.36s
+Episode 200 | Avg Last 100: -64.37 | Time Elapsed: 67.95s
+Episode 300 | Avg Last 100: 24.16 | Time Elapsed: 199.43s
+Episode 400 | Avg Last 100: -7.57 | Time Elapsed: 339.26s
+Episode 500 | Avg Last 100: -33.44 | Time Elapsed: 487.11s
+Testing: LR=0.0001, Gamma=0.99, Tau=0.001
+Episode 100 | Avg Last 100: -180.93 | Time Elapsed: 15.98s
+Episode 200 | Avg Last 100: -133.70 | Time Elapsed: 59.06s
+Episode 300 | Avg Last 100: -61.84 | Time Elapsed: 153.29s
+Episode 400 | Avg Last 100: -26.87 | Time Elapsed: 304.29s
+Episode 500 | Avg Last 100: 91.97 | Time Elapsed: 428.15s
+Testing: LR=0.0001, Gamma=0.99, Tau=0.01
+Episode 100 | Avg Last 100: -149.69 | Time Elapsed: 16.19s
+Episode 200 | Avg Last 100: -75.58 | Time Elapsed: 66.42s
+Episode 300 | Avg Last 100: -32.01 | Time Elapsed: 199.90s
+Episode 400 | Avg Last 100: 44.86 | Time Elapsed: 334.78s
+Episode 500 | Avg Last 100: 81.34 | Time Elapsed: 459.64s
+Testing: LR=0.0001, Gamma=0.99, Tau=0.1
+Episode 100 | Avg Last 100: -157.80 | Time Elapsed: 16.68s
+Episode 200 | Avg Last 100: -79.61 | Time Elapsed: 61.08s
+Episode 300 | Avg Last 100: -16.89 | Time Elapsed: 197.75s
+Episode 400 | Avg Last 100: 112.76 | Time Elapsed: 306.97s
+Episode 500 | Avg Last 100: 204.72 | Time Elapsed: 388.76s
+Testing: LR=0.0001, Gamma=0.999, Tau=0.001
+Episode 100 | Avg Last 100: -163.13 | Time Elapsed: 15.49s
+Episode 200 | Avg Last 100: -133.99 | Time Elapsed: 48.88s
+Episode 300 | Avg Last 100: -93.07 | Time Elapsed: 150.81s
+Episode 400 | Avg Last 100: -41.89 | Time Elapsed: 300.97s
+Episode 500 | Avg Last 100: -9.40 | Time Elapsed: 450.11s
+Testing: LR=0.0001, Gamma=0.999, Tau=0.01
+Episode 100 | Avg Last 100: -160.45 | Time Elapsed: 16.09s
+Episode 200 | Avg Last 100: -69.49 | Time Elapsed: 50.25s
+Episode 300 | Avg Last 100: -51.41 | Time Elapsed: 184.09s
+Episode 400 | Avg Last 100: -53.75 | Time Elapsed: 329.54s
+Episode 500 | Avg Last 100: 85.11 | Time Elapsed: 460.64s

@@ -69,21 +69,21 @@ def run_training(arch_name, layers, activation_fn, episodes=1000, max_timesteps=
 
     print(f"Final average score (episodes 900-1000): {final_avg_score:.2f}")
 
-    torch.save(agent.local_qnetwork.state_dict(), f"checkpoint_{arch_name}.pth")
+    #torch.save(agent.local_qnetwork.state_dict(), f"checkpoint_{arch_name}.pth") - Not really necessary here.
 
     with open("RQ1_results.csv", mode="a", newline="") as file:
         writer = csv.writer(file)
         writer.writerow([arch_name, elapsed_time, final_avg_score])
 
-if __name__ == "__main__":
-    architectures = {
+
+architectures = {
         'Tiny': [32, 32],
-        #'Base': [64, 64],
-        #'Wide': [128, 128],
-        #'Deep': [256, 128, 64],
+        'Base': [64, 64],
+        'Wide': [128, 128],
+        'Deep': [256, 128, 64],
     }
 
-    for arch in architectures:
+for arch in architectures:
         for run in range(5):
             print(f"\n=== Run {run+3}/5 for architecture: {arch} ===")
             run_training(
